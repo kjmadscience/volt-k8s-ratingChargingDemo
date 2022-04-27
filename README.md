@@ -22,7 +22,6 @@
 
 - install gcloud and kubeclt on the machine from where the scripts will be executed. Provide the necessary authentication for your google cloud account to use gcloud successfully.
 
-## How to run
 
 ### Starting the Sandbox
 
