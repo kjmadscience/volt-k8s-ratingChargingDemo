@@ -56,16 +56,7 @@ helm install zookeeper bitnami/zookeeper \
   --set auth.enabled=false \
   --set allowAnonymousLogin=true --namespace=$KAFKA_NS
 
-#helm install ptest prometheus-community/kube-prometheus-stack --version=$MONITORING_VERSION \
-#   --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
-#   --set grafana.service.type=LoadBalancer,grafana.adminPassword=admin -n $MONITORING_NS
-
-#helm install ptest voltdb/voltdb-prometheus-dev  \
-#   --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
-#   --set grafana.service.type=LoadBalancer,grafana.adminPassword=admin -n $MONITORING_NS
-
 helm install monitoring-stack prometheus-community/kube-prometheus-stack --version=30.0.1 -f prom_config.yaml -n monitoring
-
 
 helm install $VOLT_DEPLPOYMENTNAME voltdb/voltdb --wait --values $PROPERTY_FILE --set metrics.enabled=true \
 	--set metrics.delta=true --set cluster.config.deployment.commandlog.enabled=$COMMANDLOG_ENABLED \
@@ -83,7 +74,7 @@ kubectl cp schema/voltdb-chargingdemo.jar  mydb-voltdb-cluster-0:/tmp/ -n $VOLT_
 
 kubectl exec -it mydb-voltdb-cluster-0 -n $VOLT_NS -- sqlcmd < schema/db.sql
 
-kubectl create -f usersJob.yaml -n $VOLT_NS
+#kubectl create -f usersJob.yaml -n $VOLT_NS
 
 echo "IP for UI access"
 kubectl get nodes -o wide | tail -1 | awk -F " " {'print $7'}

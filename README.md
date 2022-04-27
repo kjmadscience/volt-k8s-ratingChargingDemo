@@ -24,7 +24,10 @@
 
 ## How to run
 
-Checkout this repo, edit the following variables in powercluster.sh as per your prefernce,
+### Starting the Sandbox
+
+Checkout this repo,
+Edit the following variables in `powercluster.sh` as per your prefernce,
 
 | Variable name | Description | Example Value |
 | ------------- | ----------- | ------------- |
@@ -45,4 +48,88 @@ Checkout this repo, edit the following variables in powercluster.sh as per your 
 |SNAPSHOT_ENABLED |	Is snapshot enabled (true/false) |	false | 
 |ZK_SVC	|zookeeper service name for kafka	|"zookeeper.kafka.svc.cluster.local" |
 
+This file will handle the following operations,
+(Picture of flow diagram1)
 
+
+After making changes to the variable, save and run the file:
+
+`sh powerCluster.sh`
+
+The output of the script will be printed in the terminal, on successful execution the following message will be printed directing to the IP and Port to access Volt and Grafana UI.
+
+```
+
+Batch command succeeded.
+IP for UI access
+34.105.220.28
+VolTB Port for UI access
+8080:31080/TCP
+grafana Port for UI access
+80:30099/TCP
+
+```
+
+### The simulated System
+
+Our demo phone company has 4 products. As in real life, a user can use more than one at once:
+
+| Product | Unit Cost |
+| --- | --- |
+| The phone company&#39;s  web site. Customers can always access the phone company&#39;s web site, even if they are out of money. | 0 |
+| SMS messages, per message. | 1c |
+| Domestic Internet Access per GB | 20c |
+| Roaming Internet Access per GB | $3.42 |
+| Domestic calls per minute | 3c |
+
+
+This means that when serving requests we need to turn the incoming request for &#39;access per GB&#39; into real money and compare it to the user&#39;s balance when deciding how much access to grant .
+
+**We have to factor in reserved balances when making decisions**
+
+- We shouldn&#39;t let you spend money you haven&#39;t got, so your usable balance has to take into account what you&#39;ve reserved. Note that any credit you&#39;ve reserved affects your balance immediately, so your balance can sometimes spike up slightly if you reserve 800 units and then come back reporting usage of 200.
+
+
+- Like any real world production code we need to be sure that the users and products we&#39;re talking about are real, and that somebody hasn&#39;t accidentally changed the order of the parameters being sent to the system.
+
+- when we report usage we&#39;re spending customer&#39;s money we can never, ever get into a situation where we charge them twice. This means that each call to &quot;Add Credit&quot; or &quot;Report Usage and Reserve More&quot; needs to include a unique identifier for the transaction, and the system needs to keep a list of successful transactions for long enough to make sure it&#39;s not a duplicate.
+
+
+## The Schema
+
+![schema](https://github.com/srmadscience/voltdb-chargingdemo/blob/master/results/chargingdemo_schema.png "Schema")
+
+| Name | Type | Purpose | Partitioning |
+| --- | --- | --- | --- |
+| user\_table | Table | holds one record per user and the JSON payload. | userid |
+| Product\_table | Table | Holds one record per product |   |
+| User\_usage\_table | Table | holds information on active reservations of credit by a user for a product. | userid |
+| User\_balances | View |  It has one row per user and always contains the user&#39;s current credit, before we allow for reservations in &quot;user\_usage\_table&quot;. | userid |
+| User\_recent\_transactions | Table | allows us to spot duplicate transactions and also allows us to track what happened to a specific user during a run | userid |
+| allocated\_by\_product | View | How much of each product is currently reserved |   |
+| total\_balances | View | A single row listing how much credit the system holds. |   |
+| User\_financial\_events | [Export stream](https://docs.voltdb.com/UsingVoltDB/ExportProjectFile.php) | inserted into when we add or spend money | userid |
+| finevent | [Export target](https://docs.voltdb.com/UsingVoltDB/ExportProjectFile.php) | Where rows in user\_financial\_events end up - could be kafka, kinesis, HDFS etc | userid |
+
+
+## How to Run
+
+Create the tesclient job using,
+
+`kubectl create -f testClientJob.yaml -n voltdb` 
+
+The parameters in the YAML file can be edited to change the behavior of simulated traffic, details about the parameters are below,
+the same parameters are used in `usersJob.yaml` to set the total number of users and the offset of user ID to be used. 
+
+| Name | Purpose | Example |
+| --- | --- | --- |
+| hostnames | volt cluster service name | mydb-voltdb-cluster-client.voltdb.svc.cluster.local |
+| recordcount | How many users to create | 10000 |
+| offset | Used when we want to run multiple copies of ChargingDemo with different users. If recordcount is 2500000 calling a second copy of ChargingDemo with an offset of 3000000 will lead it to creating users in the range 3000000 to 5500000 | 0 |
+| tpms | How many transactions per millisecond you want to achieve. Note that a single instance of ChargingDemo will only have a single VoltDB client, which will limit it to around 200 TPMS. To go beyond this you need to run more than one copy. | 4, TPS will be this value * 1000, eg, 4 * 1000 = 4000TPS on volt cluster |
+| task | One of:DELETE - deletes users and data,USERS - creates users,TRANSACTIONS - does test run| RUN |
+| loblength | How long the arbitrary JSON payload is | 10 |
+| durationseconds | How long TRANSACTIONS runs for in seconds | 300 |
+| queryseconds | How often we query to check allocations and balances in seconds, along with an arbitrary query of a single user. | 10 |
+| initialcredit | How much credit users start with. A high value for this will reduce the number of times AddCredit is called. | 1000 |
+| addcreditinterval | How often we add credit based on the number of transactions we are doing - a value of &#39;6&#39; means every 6th transaction will be AddCredit. A value of 0 means that AddCredit is only called for a user when &#39;initialcredit&#39; is run down to zero. | 6 |
