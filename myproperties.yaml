@@ -8,28 +8,28 @@ cluster:
       tag: "11.2.2"
       pullPolicy: "Always"
     persistentVolume:
-      size: "4Gi"
+      size: "128Gi"
     deletePVC: 'true'
     resources:
       requests:
-        memory: "4Gi"
-        cpu: "4"
+        memory: "64Gi"
+        cpu: "29"
       limits:
-        memory: "4Gi"
-        cpu: "4"
+        memory: "64Gi"
+        cpu: "29"
     nodeSelector:
       env: "db"
   config:
     deployment:
       cluster:
         kfactor: 1
-        sitesperhost: 4
+        sitesperhost: 20
       commandlog:
-        enabled: 'false'
+      #  enabled: 'true'
         synchronous: 'false'
-        logsize: 3072
-        frequency:
-           time: 5000
+        logsize: 20480
+#        frequency:
+#           time: 5000
       snapshot:
         enabled: 'false'
         frequency: '24h'

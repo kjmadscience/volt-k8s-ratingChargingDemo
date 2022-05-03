@@ -1,7 +1,7 @@
 #!/bin/sh
 #Variables
-CLUSTER_NAME="performance-lab"
-MACHINE_TYPE="c2-standard-8"
+CLUSTER_NAME="demo-lab"
+MACHINE_TYPE="c2-standard-30"
 NUM_NODES="5"
 MONITORING_NS="monitoring"
 VOLT_NS="voltdb"
@@ -9,7 +9,6 @@ KAFKA_NS="kafka"
 DOCKER_ID="jadejakajal13"
 DOCKER_API="b461d1b4-82c4-499e-afc0-f17943a16411"
 DOCKER_EMAIL="jadejakajal13@gmail.com"
-MONITORING_VERSION="10.1.0"
 VOLT_DEPLPOYMENTNAME="mydb"
 PROPERTY_FILE="myproperties.yaml"
 LICENSE_FILE="/Users/thanos/Documents/license.xml"

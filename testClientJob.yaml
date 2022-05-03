@@ -14,7 +14,7 @@ spec:
       containers:       
       - name: c         
         image: jadejakajal13/vanilla:11
-        args: ["java", "-jar", "voltdb-chargingdemo.jar", "mydb-voltdb-cluster-client.voltdb.svc.cluster.local", "10000", "0", "4", "TRANSACTIONS", "10", "900", "300", "100000", "0"]       
+        args: ["java", "-jar", "voltdb-chargingdemo.jar", "mydb-voltdb-cluster-client.voltdb.svc.cluster.local", "400000", "0", "90", "TRANSACTIONS", "10", "300", "300", "100000", "0"]       
       restartPolicy: OnFailure
       nodeSelector:
         env: "client"

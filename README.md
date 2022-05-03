@@ -132,3 +132,21 @@ the same parameters are used in `usersJob.yaml` to set the total number of users
 | queryseconds | How often we query to check allocations and balances in seconds, along with an arbitrary query of a single user. | 10 |
 | initialcredit | How much credit users start with. A high value for this will reduce the number of times AddCredit is called. | 1000 |
 | addcreditinterval | How often we add credit based on the number of transactions we are doing - a value of &#39;6&#39; means every 6th transaction will be AddCredit. A value of 0 means that AddCredit is only called for a user when &#39;initialcredit&#39; is run down to zero. | 6 |
+
+
+## Verify Kafka
+
+The following commands help verify that the connection is working fine between volt and Kafka.
+
+First we create a Client Pod to read Kafka messages. 
+
+`kubectl run kafka-client --restart='Never' --image docker.io/bitnami/kafka:3.1.0-debian-10-r68 --namespace kafka --command -- sleep infinity`
+
+we then log in the created Pod using 
+
+`kubectl exec --tty -i kafka-client --namespace kafka -- bash`
+
+Next we create a consumer using, 
+
+`kafka-console-consumer.sh  --bootstrap-server kafka.kafka.svc.cluster.local:9092  --topic finevent  --from-beginning`
+
