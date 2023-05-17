@@ -2,7 +2,7 @@
 
 ### Powerful and simplistic solution.
 
-- This sandbox aims to demonstrate how **Volt Active Data** can help in scenarios such as telcommunications where users are working with *shared and finite resources* while meeting SLAs, such as SMS messages or bandwidth. 
+- This sandbox aims to demonstrate how **Volt Active Data** can help in telcommunications where users are working with *shared and finite resources* while meeting SLAs, such as SMS messages or bandwidth. 
 - With the recent move in industry towards containerization and cloud architecture, we want to showcase Volt readiness and easy to use approach for integrating in a cloud native ecosystem with leading tools like **Docker** and **Kubernetes**.
 - The demo is a drastically simplified representation of what's known as a 'charging' system. Every prepaid cell phone uses one of these, it decides what the user can do, how long they can do it for, and tells downstream systems what was used when the activity finishes. Following activities happen in this deployment:
 
